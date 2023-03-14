@@ -14,46 +14,53 @@
 
 namespace KiwiCommerce\CronScheduler\Helper;
 
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\ProductMetadata;
+use Magento\Framework\Message\ManagerInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+
 /**
  * Class Schedule
  * @package KiwiCommerce\CronScheduler\Helper
  */
-class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
+class Schedule extends AbstractHelper
 {
     /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
+     * @var CollectionFactory|null
      */
     public $scheduleCollectionFactory = null;
 
     /**
-     * @var \Magento\Framework\Message\ManagerInterface
+     * @var ManagerInterface|null
      */
     public $messageManager = null;
 
     /**
-     * @var \Magento\Framework\App\ProductMetadata
+     * @var ProductMetadata|null
      */
     public $productMetaData = null;
 
     /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
+     * @var DateTime|null
      */
     public $datetime = null;
 
     /**
      * Class constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \Magento\Framework\Message\ManagerInterface $messageManager
-     * @param \Magento\Framework\App\ProductMetadata $productMetaData
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $datetime
+     * @param Context $context
+     * @param CollectionFactory $scheduleCollectionFactory
+     * @param ManagerInterface $messageManager
+     * @param ProductMetadata $productMetaData
+     * @param DateTime $datetime
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Framework\App\ProductMetadata $productMetaData,
-        \Magento\Framework\Stdlib\DateTime\DateTime $datetime
+        Context $context,
+        CollectionFactory $scheduleCollectionFactory,
+        ManagerInterface $messageManager,
+        ProductMetadata $productMetaData,
+        DateTime $datetime
     ) {
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->messageManager = $messageManager;
@@ -120,19 +127,19 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
      * @param mixed $time
      * @return string
      */
-    public function filterTimeInput($time)
+    public function filterTimeInput($time): string
     {
         $matches = [];
         preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
         $time = $matches[1] . " " . $matches[2];
-        return strftime('%Y-%m-%d %H:%M:00', strtotime($time));
+        return date('Y-m-d H:M:00', strtotime($time));
     }
 
     /**
      * Set last cron status message.
      *
      */
-    public function getLastCronStatusMessage()
+    public function getLastCronStatusMessage():void
     {
         $magentoVersion = $this->getMagentoversion();
         if (version_compare($magentoVersion, "2.2.0") >= 0) {
@@ -141,11 +148,11 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
             $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
         }
         $lastCronStatus = strtotime($this->scheduleCollectionFactory->create()->getLastCronStatus());
-        if ($lastCronStatus != null) {
-            $diff = floor(($currentTime - $lastCronStatus) / 60);
+        if ($lastCronStatus !== false) {
+            $diff = intdiv(($currentTime-$lastCronStatus), 60);
             if ($diff > 5) {
                 if ($diff >= 60) {
-                    $diff = floor($diff / 60);
+                    $diff = intdiv($diff, 60);
                     $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 hour%2", $diff, ($diff > 1) ? "s" : ""));
                 } else {
                     $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 minute%2", $diff, ($diff > 1) ? "s" : ""));
