@@ -58,6 +58,7 @@ class Listing extends \Magento\Backend\App\Action
      * Execute action
      * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
+
     public function execute()
     {
         $this->scheduleHelper->getLastCronStatusMessage();

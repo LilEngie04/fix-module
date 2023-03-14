@@ -114,7 +114,7 @@ class Schedule extends AbstractHelper
      * Save Memory usage.Convert bytes to megabytes.
      * @param $schedule
      */
-    public function setMemoryUsage(&$schedule)
+    public function setMemoryUsage(&$schedule): void
     {
         $memory = (memory_get_peak_usage(false)/1024/1024);
 
@@ -146,6 +146,8 @@ class Schedule extends AbstractHelper
      * Set last cron status message.
      *
      */
+
+
     public function getLastCronStatusMessage():void
     {
         $magentoVersion = $this->getMagentoversion();
@@ -155,8 +157,8 @@ class Schedule extends AbstractHelper
             $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
         }
         $lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
-        if (!is_null($lastCronStatus)) {
-            $this->getLastCronStatusTimesptamp = DateTime::createFromFormat('Y-m-d H:i:s', $lastCronStatus)->getTimestamp();
+        if ($lastCronStatus !== null) {
+            $lastCronStatus = strtotime($lastCronStatus);
             $diff = intdiv(($currentTime-$lastCronStatus), 60);
             if ($diff > 5) {
                 if ($diff >= 60) {
@@ -177,7 +179,15 @@ class Schedule extends AbstractHelper
      * Get Latest magento Version
      * @return mixed
      */
-    public function getMagentoversion()
+    /*public function getMagentoversion()
+    {
+        $explodedVersion = explode("-", $this->productMetaData->getVersion());
+        $magentoversion = $explodedVersion[0];
+
+        return $magentoversion;
+    }*/
+
+    public function getMagentoversion(): string
     {
         $explodedVersion = explode("-", $this->productMetaData->getVersion());
         $magentoversion = $explodedVersion[0];
