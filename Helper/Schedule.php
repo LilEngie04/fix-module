@@ -104,7 +104,8 @@ class Schedule extends AbstractHelper
      * @param $index
      * @return float|int
      */
-    private function rutime($ru, $rus, $index)
+
+    private function rutime(array $ru, array $rus, string $index): int
     {
         return ($ru["ru_$index.tv_sec"]*1000 + intval($ru["ru_$index.tv_usec"]/1000))
             -  ($rus["ru_$index.tv_sec"]*1000 + intval($rus["ru_$index.tv_usec"]/1000));
