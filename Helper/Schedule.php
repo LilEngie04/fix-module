@@ -76,7 +76,7 @@ class Schedule extends AbstractHelper
      *
      * @param $schedule
      */
-    public function setPid(&$schedule)
+    public function setPid(&$schedule): void
     {
         if (function_exists('getmypid')) {
             $schedule->setPid(getmypid());
@@ -142,28 +142,31 @@ class Schedule extends AbstractHelper
      *
      */
 
-
-    public function getLastCronStatusMessage():void
+    public function getLastCronStatusMessage(): void
     {
         $magentoVersion = $this->getMagentoversion();
-        if (version_compare($magentoVersion, "2.2.0") >= 0) {
-            $currentTime = $this->datetime->date('U');
-        } else {
-            $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
-        }
-        $lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
-        if ($lastCronStatus !== null) {
-            $lastCronStatus = strtotime($lastCronStatus);
-            $diff = intdiv(($currentTime-$lastCronStatus), 60);
+        $currentTime = match (true) {
+            version_compare($magentoVersion, "2.2.0") >= 0 => $this->datetime->date('U'),
+            default => (int) $this->datetime->date('U') + $this->datetime->getGmtOffset()->hours * 60 * 60,
+        };
+        $lastCronStatus = strtotime($this->scheduleCollectionFactory->create()->getLastCronStatus());
+        if ($lastCronStatus !== false) {
+            $diff = (int) floor(($currentTime - $lastCronStatus) / 60);
             if ($diff > 5) {
                 if ($diff >= 60) {
-                    $diff = intdiv($diff, 60);
-                    $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 hour%2", $diff, ($diff > 1) ? "s" : ""));
+                    $diff = (int) floor($diff / 60);
+                    $this->messageManager->addErrorMessage(
+                        __("Last cron execution is older than %1 hour%2", $diff, ($diff > 1) ? "s" : "")
+                    );
                 } else {
-                    $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 minute%2", $diff, ($diff > 1) ? "s" : ""));
+                    $this->messageManager->addErrorMessage(
+                        __("Last cron execution is older than %1 minute%2", $diff, ($diff > 1) ? "s" : "")
+                    );
                 }
             } else {
-                $this->messageManager->addSuccessMessage(__("Last cron execution was %1 minute%2 ago", $diff, ($diff > 1) ? "s" : ""));
+                $this->messageManager->addSuccessMessage(
+                    __("Last cron execution was %1 minute%2 ago", $diff, ($diff > 1) ? "s" : "")
+                );
             }
         } else {
             $this->messageManager->addErrorMessage(__("No cron execution found"));
