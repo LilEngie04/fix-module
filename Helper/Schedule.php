@@ -127,12 +127,19 @@ class Schedule extends AbstractHelper
      * @param mixed $time
      * @return string
      */
-    public function filterTimeInput($time): string
+    /*public function filterTimeInput($time): string
     {
         $matches = [];
         preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
         $time = $matches[1] . " " . $matches[2];
-        return date('Y-m-d H:M:00', strtotime($time));
+        return date('Y-m-d H:M:00', $time);
+    }*/
+
+    public function filterTimeInput(string $time): string
+    {
+        preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
+        $time = $matches[1] . " " . $matches[2];
+        return date_create_from_format('Y-m-d H:i', $time)->format('Y-m-d H:i:00');
     }
 
     /**
@@ -147,8 +154,9 @@ class Schedule extends AbstractHelper
         } else {
             $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
         }
-        $lastCronStatus = strtotime($this->scheduleCollectionFactory->create()->getLastCronStatus());
-        if ($lastCronStatus !== false) {
+        $lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
+        if (!is_null($lastCronStatus)) {
+            $this->getLastCronStatusTimesptamp = DateTime::createFromFormat('Y-m-d H:i:s', $lastCronStatus)->getTimestamp();
             $diff = intdiv(($currentTime-$lastCronStatus), 60);
             if ($diff > 5) {
                 if ($diff >= 60) {
