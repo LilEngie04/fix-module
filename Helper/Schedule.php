@@ -20,6 +20,7 @@ use Magento\Framework\App\Helper\Context;
 use Magento\Framework\App\ProductMetadata;
 use Magento\Framework\Message\ManagerInterface;
 use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Tests\NamingConvention\true\string;
 
 /**
  * Class Schedule
@@ -88,7 +89,7 @@ class Schedule extends AbstractHelper
      * @param $rus
      * @param $schedule
      */
-    public function setCpuUsage($ru, $rus, &$schedule)
+    public function setCpuUsage(array $ru, array $rus, mixed &$schedule): void
     {
         $cpuData = $this->rutime($ru, $rus, 'utime');
         $systemData = $this->rutime($ru, $rus, 'stime');
@@ -102,7 +103,7 @@ class Schedule extends AbstractHelper
      * @param $ru
      * @param $rus
      * @param $index
-     * @return float|int
+     * @return string|int
      */
 
     private function rutime(array $ru, array $rus, string $index): int
@@ -128,13 +129,6 @@ class Schedule extends AbstractHelper
      * @param mixed $time
      * @return string
      */
-    /*public function filterTimeInput($time): string
-    {
-        $matches = [];
-        preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
-        $time = $matches[1] . " " . $matches[2];
-        return date('Y-m-d H:M:00', $time);
-    }*/
 
     public function filterTimeInput(string $time): string
     {
