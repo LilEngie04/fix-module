@@ -145,36 +145,31 @@ class Schedule extends AbstractHelper
     public function getLastCronStatusMessage(): void
     {
         $magentoVersion = $this->getMagentoversion();
-        $dateTime = new \DateTimeImmutable();
-        $currentTime = match (true) {
-            version_compare($magentoVersion, "2.2.0") >= 0 => $dateTime->getTimestamp(),
-            default => (int) $dateTime->format('U') + $dateTime->getOffset()->getTotalSeconds(),
-        };
+        if (version_compare($magentoVersion, "2.2.0") >= 0) {
+            $currentTime = $this->datetime->date('U');
+        } else {
+            $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
+        }
         $lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
-        if ($lastCronStatus !== null) {
-            $lastCronStatusDateTime = new \DateTimeImmutable($lastCronStatus);
-            $lastCronStatusTimestamp = $lastCronStatusDateTime->getTimestamp();
-            $diff = (int) floor(($currentTime - $lastCronStatusTimestamp) / 60);
+        if (!empty($lastCronStatus)) {
+            $lastCronStatusTime = strtotime($lastCronStatus ?? 'now');
+            $diff = floor(($currentTime - $lastCronStatusTime) / 60);
             if ($diff > 5) {
                 if ($diff >= 60) {
-                    $diff = (int) floor($diff / 60);
-                    $this->messageManager->addErrorMessage(
-                        __("Last cron execution is older than %1 hour%2", $diff, ($diff > 1) ? "s" : "")
-                    );
+                    $diff = intdiv($diff, 60);
+                    $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 hour%2", $diff, ($diff > 1) ? "s" : ""));
                 } else {
-                    $this->messageManager->addErrorMessage(
-                        __("Last cron execution is older than %1 minute%2", $diff, ($diff > 1) ? "s" : "")
-                    );
+                    $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 minute%2", $diff, ($diff > 1) ? "s" : ""));
                 }
-            } else {
-                $this->messageManager->addSuccessMessage(
-                    __("Last cron execution was %1 minute%2 ago", $diff, ($diff > 1) ? "s" : "")
-                );
+            }
+            else {
+                $this->messageManager->addSuccessMessage(__("Last cron execution was %1 minute%2 ago", $diff, ($diff > 1) ? "s" : ""));
             }
         } else {
             $this->messageManager->addErrorMessage(__("No cron execution found"));
         }
     }
+
 
 
     /**
