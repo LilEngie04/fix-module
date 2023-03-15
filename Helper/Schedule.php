@@ -48,6 +48,8 @@ class Schedule extends AbstractHelper
      */
     public $datetime = null;
 
+    public DateTime::format(string $format): string;
+
     /**
      * Class constructor.
      * @param Context $context
@@ -130,11 +132,19 @@ class Schedule extends AbstractHelper
      * @return string
      */
 
-    public function filterTimeInput(string $time): string
+    /*public function filterTimeInput(string $time): string
     {
         preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
         $time = $matches[1] . " " . $matches[2];
         return date_create_from_format('Y-m-d H:i', $time)->format('Y-m-d H:i:00');
+    }*/
+
+    public function filterTimeInput($time): string
+    {
+        $matches = [];
+        preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
+        $time = $matches[1] . " " . $matches[2];
+        return date('%Y-%m-%d %H:%M:00', date($time));
     }
 
     /**
@@ -142,15 +152,18 @@ class Schedule extends AbstractHelper
      *
      */
 
-    public function getLastCronStatusMessage(): void
+    /*public function getLastCronStatusMessage(): void
     {
         $magentoVersion = $this->getMagentoversion();
+        $currentTime = new DateTime();
         if (version_compare($magentoVersion, "2.2.0") >= 0) {
             $currentTime = $this->datetime->date('U');
         } else {
-            $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
+            $currentTime->modify('+' . $this->datetime->getGmtOffset('hours') . ' hours');
+            //$currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
         }
-        $lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
+        $lastCronStatus = strtotime($this->scheduleCollectionFactory->create()->getLastCronStatus());
+        //$lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
         if (!empty($lastCronStatus)) {
             $lastCronStatusTime = strtotime($lastCronStatus ?? 'now');
             $diff = floor(($currentTime - $lastCronStatusTime) / 60);
@@ -163,6 +176,32 @@ class Schedule extends AbstractHelper
                 }
             }
             else {
+                $this->messageManager->addSuccessMessage(__("Last cron execution was %1 minute%2 ago", $diff, ($diff > 1) ? "s" : ""));
+            }
+        } else {
+            $this->messageManager->addErrorMessage(__("No cron execution found"));
+        }
+    }*/
+
+    public function getLastCronStatusMessage()
+    {
+        $magentoVersion = $this->getMagentoversion();
+        if (version_compare($magentoVersion, "2.2.0") >= 0) {
+            $currentTime = $this->datetime->date('U');
+        } else {
+            $currentTime = (int)$this->datetime->date('U') + $this->datetime->getGmtOffset('hours') * 60 * 60;
+        }
+        $lastCronStatus = DateTime::format($this->scheduleCollectionFactory->create()->getLastCronStatus());
+        if ($lastCronStatus != null) {
+            $diff = intdiv(($currentTime - $lastCronStatus), 60);
+            if ($diff > 5) {
+                if ($diff >= 60) {
+                    $diff = intdiv($diff, 60);
+                    $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 hour%2", $diff, ($diff > 1) ? "s" : ""));
+                } else {
+                    $this->messageManager->addErrorMessage(__("Last cron execution is older than %1 minute%2", $diff, ($diff > 1) ? "s" : ""));
+                }
+            } else {
                 $this->messageManager->addSuccessMessage(__("Last cron execution was %1 minute%2 ago", $diff, ($diff > 1) ? "s" : ""));
             }
         } else {
