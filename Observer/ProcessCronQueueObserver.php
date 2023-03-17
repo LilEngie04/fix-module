@@ -14,6 +14,7 @@
 
 namespace KiwiCommerce\CronScheduler\Observer;
 
+use DateTime;
 use Magento\Cron\Model\Schedule;
 use Magento\Framework\App\State;
 use Magento\Framework\Console\Cli;
@@ -144,7 +145,7 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
             );
         }
 
-        $schedule->setExecutedAt(strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))->save();
+        $schedule->setExecutedAt(DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))->save();
 
         $this->startProfiling();
         try {
@@ -176,7 +177,7 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
         $schedule->setStatus(
             Schedule::STATUS_SUCCESS
         )->setFinishedAt(
-            strftime(
+            DateTime::createFromFormat(
                 '%Y-%m-%d %H:%M:%S',
                 $this->dateTime->gmtTimestamp()
             )

@@ -14,39 +14,48 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Job;
 
+use Exception;
+use KiwiCommerce\CronScheduler\Helper\Cronjob;
+use KiwiCommerce\CronScheduler\Model\Job;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+
 /**
  * Class Save
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Job
  */
-class Save extends \Magento\Backend\App\Action
+class Save extends Action
 {
     /**
-     * @var \Magento\Framework\App\Cache\TypeListInterface
+     * @var TypeListInterface
      */
     public $cacheTypeList;
 
     /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Cronjob
+     * @var Cronjob
      */
     public $jobHelper = null;
 
     /**
-     * @var \KiwiCommerce\CronScheduler\Model\Job
+     * @var Job
      */
     public $jobModel;
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
-     * @param \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
-     * @param \KiwiCommerce\CronScheduler\Model\Job $jobModel
+     * @param Context $context
+     * @param TypeListInterface $cacheTypeList
+     * @param Cronjob $jobHelper
+     * @param Job $jobModel
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
-        \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper,
-        \KiwiCommerce\CronScheduler\Model\Job $jobModel
+        Context $context,
+        TypeListInterface $cacheTypeList,
+        Cronjob $jobHelper,
+        Job $jobModel
     ) {
         $this->cacheTypeList = $cacheTypeList;
         $this->jobHelper = $jobHelper;
@@ -56,7 +65,7 @@ class Save extends \Magento\Backend\App\Action
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
+     * @return ResponseInterface|ResultInterface
      */
     public function execute()
     {
@@ -108,7 +117,7 @@ class Save extends \Magento\Backend\App\Action
                     $this->messageManager->addWarningMessage(__('The cron already exists for expressions - '.join(',', $error)));
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
             return $this->_redirect('*/*/listing');
         }
