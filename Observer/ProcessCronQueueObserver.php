@@ -58,6 +58,7 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
      */
     private $state;
 
+
     /**
      * @param \Magento\Framework\ObjectManagerInterface $objectManager
      * @param \Magento\Cron\Model\ScheduleFactory $scheduleFactory
@@ -145,7 +146,7 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
             );
         }
 
-        $schedule->setExecutedAt(DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))->save();
+        $schedule->setExecutedAt(\DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp()))->save();
 
         $this->startProfiling();
         try {
@@ -177,7 +178,7 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
         $schedule->setStatus(
             Schedule::STATUS_SUCCESS
         )->setFinishedAt(
-            DateTime::createFromFormat(
+            \DateTime::createFromFormat(
                 '%Y-%m-%d %H:%M:%S',
                 $this->dateTime->gmtTimestamp()
             )
@@ -335,7 +336,8 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
             }
         });
 
-        $currentTime = $this->dateTime->gmtTimestamp();
+        //$currentTime = $this->dateTime->gmtTimestamp();
+        $currentTime = new \DateTime();
         $jobGroupsRoot = $this->_config->getJobs();
         // sort jobs groups to start from used in separated process
         uksort(
@@ -594,7 +596,7 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
                 continue;
             }
 
-            $scheduledTime = strtotime($schedule->getScheduledAt());
+            $scheduledTime = \DateTime::createFromFormat('U', $schedule->getScheduledAt());
             if ($scheduledTime > $currentTime) {
                 continue;
             }
