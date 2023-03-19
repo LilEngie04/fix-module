@@ -14,40 +14,31 @@
  */
 namespace KiwiCommerce\CronScheduler\Block\Adminhtml\DefaultBlocks;
 
+use Exception;
+use Magento\Framework\App\DeploymentConfig\Reader;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+
 /**
  * Class Setvalues
  * @package KiwiCommerce\CronScheduler\Block\Adminhtml\DefaultBlocks
  */
-class Setvalues extends \Magento\Framework\View\Element\Template
+class Setvalues extends Template
 {
-    /**
-     * @var \Magento\Framework\App\DeploymentConfig\Reader
-     */
-    public $configReader;
+    public Reader $configReader;
 
-    /**
-     * Class constructor.
-     * @param \Magento\Framework\View\Element\Template\Context $context
-     * @param \Magento\Framework\App\DeploymentConfig\Reader $configReader
-     */
     public function __construct(
-        \Magento\Framework\View\Element\Template\Context $context,
-        \Magento\Framework\App\DeploymentConfig\Reader $configReader
+        Context $context,
+        Reader $configReader
     ) {
         $this->configReader = $configReader;
         parent::__construct($context);
     }
 
-    /**
-     * Get Admin URL
-     * @return string
-     * @throws \Exception
-     * @throws \Magento\Framework\Exception\FileSystemException
-     */
-    public function getAdminBaseUrl()
+    public function getAdminBaseUrl(): string
     {
         $config = $this->configReader->load();
-        $adminSuffix = $config['backend']['frontName'];
-        return $this->getBaseUrl() . $adminSuffix . '/';
+        return $this->getBaseUrl() . ($config['backend']['frontName'] ?? '') . '/';
     }
 }
