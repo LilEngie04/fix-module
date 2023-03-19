@@ -14,16 +14,20 @@
 
 namespace KiwiCommerce\CronScheduler\Block\Adminhtml\Dashboard;
 
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\Block\Template;
+use Magento\Backend\Block\Template\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Store\Model\ScopeInterface;
+
 /**
  * Class Cronjobs
  * @package KiwiCommerce\CronScheduler\Block\Adminhtml\Dashboard
  */
-class Cronjobs extends \Magento\Backend\Block\Template
+class Cronjobs extends Template
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
     /**
      * Dashboard enable/disable status
@@ -35,49 +39,35 @@ class Cronjobs extends \Magento\Backend\Block\Template
      */
     const TOTAL_RECORDS_ON_DASHBOARD = 5;
 
-    /**
-     * Class constructor.
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
+        Context $context,
+        CollectionFactory $scheduleCollectionFactory
     ) {
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         parent::__construct($context);
     }
 
-    /**
-     * Get Top running jobs
-     *
-     * @return \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection
-     */
     public function getTopRunningJobs()
     {
         $collection = $this->scheduleCollectionFactory->create();
 
-        $collection->addFieldToFilter('status', \Magento\Cron\Model\Schedule::STATUS_SUCCESS)
+        $collection->addFieldToFilter('status', Schedule::STATUS_SUCCESS)
             ->addExpressionFieldToSelect(
                 'timediff',
-                'TIME_TO_SEC(TIMEDIFF(`finished_at`, `executed_at`))',
+                fn($field) => 'TIME_TO_SEC(TIMEDIFF(`finished_at`, `executed_at`))',
                 []
             )
-            ->setOrder('TIME_TO_SEC(TIMEDIFF(`finished_at`, `executed_at`))', 'DESC')
+            ->setOrder('timediff', 'DESC')
             ->setPageSize(self::TOTAL_RECORDS_ON_DASHBOARD)
             ->load();
 
         return $collection;
     }
 
-    /**
-     * Check store configuration value for dashboard
-     * @return mixed
-     */
-    public function isDashboardActive()
+    public function isDashboardActive(): bool
     {
-        $dashboardEnableStatus = $this->_scopeConfig->getValue(self::XML_PATH_DASHBOARD_ENABLE_STATUS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $dashboardEnableStatus = $this->_scopeConfig->getValue(self::XML_PATH_DASHBOARD_ENABLE_STATUS, ScopeInterface::SCOPE_STORE);
 
-        return $dashboardEnableStatus;
+        return (bool) $dashboardEnableStatus;
     }
 }
