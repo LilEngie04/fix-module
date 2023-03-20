@@ -14,51 +14,40 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Job;
 
+use KiwiCommerce\CronScheduler\Helper\Cronjob;
+use KiwiCommerce\CronScheduler\Model\Job;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+
 /**
  * Class Delete
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Job
  */
-class Delete extends \Magento\Backend\App\Action
+class Delete extends Action
 {
-    /**
-     * @var \Magento\Framework\App\Cache\TypeListInterface
-     */
-    public $cacheTypeList;
+    public TypeListInterface $cacheTypeList;
 
-    /**
-     * @var string
-     */
-    protected $aclResource = "job_deletejob";
+    protected string $aclResource = "job_deletejob";
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\Job
-     */
-    public $jobModel;
+    public Job $jobModel;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Cronjob
-     */
-    public $jobHelper = null;
+    public Cronjob $jobHelper;
 
     /**
      * Class constructor
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
-     * @param \KiwiCommerce\CronScheduler\Model\Job $jobModel
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper,
-        \KiwiCommerce\CronScheduler\Model\Job $jobModel
+        Context $context,
+        TypeListInterface $cacheTypeList,
+        CollectionFactory $scheduleCollectionFactory,
+        Cronjob $jobHelper,
+        Job $jobModel
     ) {
         $this->cacheTypeList = $cacheTypeList;
         $this->jobHelper = $jobHelper;
@@ -69,18 +58,16 @@ class Delete extends \Magento\Backend\App\Action
 
     /**
      * Is action allowed?
-     * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
         return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         $jobcode = $this->getRequest()->getParam('job_code');
         $group = $this->getRequest()->getParam('group');
