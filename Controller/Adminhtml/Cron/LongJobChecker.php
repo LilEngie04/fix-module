@@ -14,42 +14,36 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Cron;
 
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+
 /**
  * Class LongJobChecker
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Cron
  */
-class LongJobChecker extends \Magento\Backend\App\Action
+class LongJobChecker extends Action
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var string
-     */
-    private $timePeriod = '- 3 hour';
+    private string $timePeriod = '- 3 hour';
 
     /**
      * Constant for killed status.
      */
     const STATUS_KILLED = 'killed';
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    public $dateTime;
+    public DateTime $dateTime;
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
+        Context $context,
+        DateTime $dateTime,
+        CollectionFactory $scheduleCollectionFactory
     ) {
         $this->dateTime = $dateTime;
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
@@ -62,9 +56,9 @@ class LongJobChecker extends \Magento\Backend\App\Action
     public function execute()
     {
         $collection = $this->scheduleCollectionFactory->create();
-        $time = strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp($this->timePeriod));
+        $time = DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp($this->timePeriod));
 
-        $jobs = $collection->addFieldToFilter('status', \Magento\Cron\Model\Schedule::STATUS_RUNNING)
+        $jobs = $collection->addFieldToFilter('status', Schedule::STATUS_RUNNING)
             ->addFieldToFilter(
                 'finished_at',
                 ['null' => true]
@@ -79,9 +73,9 @@ class LongJobChecker extends \Magento\Backend\App\Action
         foreach ($jobs as $job) {
             $pid = $job->getPid();
 
-            $finished_at = strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
+            $finished_at = DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
             if (function_exists('posix_getsid') && posix_getsid($pid) === false) {
-                $job->setData('status', \Magento\Cron\Model\Schedule::STATUS_ERROR);
+                $job->setData('status', Schedule::STATUS_ERROR);
                 $job->setData('messages', __('Execution stopped due to some error.'));
                 $job->setData('finished_at', $finished_at);
             } else {

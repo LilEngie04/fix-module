@@ -13,7 +13,7 @@
  */
 ?>
 <?php $items = $block->getItems() ?>
-<?php if(!empty($items['errorMessages']->getData())) { ?>
+<?php if (!empty($items['errorMessages']->getData())) { ?>
     <h3><strong>Fatal errors in store</strong></h3>
     <table>
         <thead>
@@ -27,7 +27,7 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($items['errorMessages'] as $item) : ?>
+        <?php foreach ($items['errorMessages'] as $item): ?>
             <tr>
                 <td><?php echo $item->getJobCode(); ?></td>
                 <td><?php echo $item->getErrorMessage(); ?></td>
@@ -37,7 +37,7 @@
     </table>
 <?php } ?>
 
-<?php if(!empty($items['missedJobs']->getData())) { ?>
+<?php if (!empty($items['missedJobs']->getData())) { ?>
     <h3><strong>Missed jobs in store</strong></h3>
     <table>
         <thead>
@@ -51,7 +51,7 @@
         </tr>
         </thead>
         <tbody>
-        <?php foreach ($items['missedJobs'] as $item) : ?>
+        <?php foreach ($items['missedJobs'] as $item): ?>
             <tr>
                 <td><?php echo $item->getJobCode(); ?></td>
                 <td align="center"><?php echo $item->getTotalmissed(); ?></td>

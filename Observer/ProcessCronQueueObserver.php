@@ -98,9 +98,22 @@ class ProcessCronQueueObserver extends \Magento\Cron\Observer\ProcessCronQueueOb
         \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
     ) {
         parent::__construct(
-            $objectManager, $scheduleFactory, $cache, $config, $scopeConfig,
-            $request, $shell, $dateTime, $phpExecutableFinderFactory, $logger,
-            $state, $statFactory, $lockManager, $eventManager, $retrier);
+            $objectManager,
+            $scheduleFactory,
+            $cache,
+            $config,
+            $scopeConfig,
+            $request,
+            $shell,
+            $dateTime,
+            $phpExecutableFinderFactory,
+            $logger,
+            $state,
+            $statFactory,
+            $lockManager,
+            $eventManager,
+            $retrier
+        );
         $this->logger = $logger;
         $this->state = $state;
         $this->statProfiler = $statFactory->create();

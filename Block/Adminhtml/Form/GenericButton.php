@@ -17,6 +17,7 @@ namespace KiwiCommerce\CronScheduler\Block\Adminhtml\Form;
 use Magento\Backend\Block\Widget\Context;
 use Magento\Framework\Registry;
 use Magento\Framework\UrlInterface;
+
 /**
  * Class GenericButton
  * @package KiwiCommerce\CronScheduler\Block\Adminhtml\Form
@@ -30,7 +31,8 @@ class GenericButton
     public function __construct(
         protected UrlInterface $urlBuilder,
         protected Registry $registry
-    ) { }
+    ) {
+    }
 
     /**
      * Return the synonyms group Id.

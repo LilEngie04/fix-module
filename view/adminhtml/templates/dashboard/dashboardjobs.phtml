@@ -11,10 +11,9 @@
  * @copyright  Copyright (C) 2018 Kiwi Commerce Ltd (https://kiwicommerce.co.uk/)
  * @license    https://kiwicommerce.co.uk/magento2-extension-license/
  */
-if($block->isDashboardActive())
-{
+if ($block->isDashboardActive()) {
     $cronjobs = $block->getTopRunningJobs();
-?>
+    ?>
 
 <div class="dashboard-item" style="width: 33%;">
     <div class="dashboard-item-title"><?= /* @escapeNotVerified */ __('Top Running Cron Jobs') ?></div>
@@ -33,7 +32,7 @@ if($block->isDashboardActive())
                         <td><?php echo $cronjob->getJobCode();?></td>
                         <td><?php echo $cronjob->getTimediff();?></td>
                     </tr>
-            <?php
+                    <?php
                 }
             } else { ?>
                     <tr>
@@ -45,6 +44,6 @@ if($block->isDashboardActive())
     </div>
 </div>
 
-<?php
+    <?php
 }
 ?>

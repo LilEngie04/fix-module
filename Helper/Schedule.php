@@ -14,7 +14,6 @@
 
 namespace KiwiCommerce\CronScheduler\Helper;
 
-
 /**
  * Class Schedule
  * @package KiwiCommerce\CronScheduler\Helper

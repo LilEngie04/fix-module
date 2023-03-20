@@ -63,7 +63,6 @@ class CronJobDataProvider extends AbstractDataProvider
         \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper,
         \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
         RequestInterface $request,
-
         array $meta = [],
         array $data = []
     ) {
