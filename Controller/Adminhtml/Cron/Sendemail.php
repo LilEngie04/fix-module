@@ -14,11 +14,30 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Cron;
 
+use Exception;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Framework\App\Area;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\MailException;
+use Magento\Framework\Mail\Template\SenderResolverInterface;
+use Magento\Framework\Mail\Template\TransportBuilder;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Translate\Inline\StateInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
+use Psr\Log\LoggerInterface;
+
 /**
  * Class Sendemail
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Cron
  */
-class Sendemail extends \Magento\Backend\App\Action
+class Sendemail extends Action
 {
     /**
      * Recipient email config path
@@ -30,45 +49,21 @@ class Sendemail extends \Magento\Backend\App\Action
      */
     const XML_PATH_EMAIL_ENABLE_STATUS = 'cronscheduler/general/cronscheduler_email_enabled';
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var \Magento\Framework\Mail\Template\TransportBuilder
-     */
-    public $transportBuilder = null;
+    public TransportBuilder $transportBuilder;
 
-    /**
-     * @var \Magento\Framework\Translate\Inline\StateInterface
-     */
-    public $inlineTranslation = null;
+    public StateInterface $inlineTranslation;
 
-    /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    public $scopeConfig = null;
+    public ScopeConfigInterface $scopeConfig;
 
-    /**
-     * @var \Magento\Store\Model\StoreManagerInterface
-     */
-    public $storeManager = null;
+    public StoreManagerInterface $storeManager;
 
-    /**
-     * @var \Magento\Framework\Mail\Template\SenderResolverInterface
-     */
-    public $senderResolver;
+    public SenderResolverInterface $senderResolver;
 
-    /**
-     * @var \Psr\Log\LoggerInterface
-     */
-    public $logger;
+    public LoggerInterface $logger;
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    public $dateTime;
+    public DateTime $dateTime;
 
     /**
      * Test Email Template Name
@@ -82,26 +77,17 @@ class Sendemail extends \Magento\Backend\App\Action
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder
-     * @param \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \Magento\Framework\Mail\Template\SenderResolverInterface $senderResolver
-     * @param \Magento\Store\Model\StoreManagerInterface $storeManager
-     * @param \Psr\Log\LoggerInterface $logger
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \Magento\Framework\Mail\Template\TransportBuilder $transportBuilder,
-        \Magento\Framework\Translate\Inline\StateInterface $inlineTranslation,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Magento\Framework\Mail\Template\SenderResolverInterface $senderResolver,
-        \Magento\Store\Model\StoreManagerInterface $storeManager,
-        \Psr\Log\LoggerInterface $logger
+        Context $context,
+        CollectionFactory $scheduleCollectionFactory,
+        TransportBuilder $transportBuilder,
+        StateInterface $inlineTranslation,
+        ScopeConfigInterface $scopeConfig,
+        DateTime $dateTime,
+        SenderResolverInterface $senderResolver,
+        StoreManagerInterface $storeManager,
+        LoggerInterface $logger
     ) {
         parent::__construct($context);
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
@@ -116,17 +102,44 @@ class Sendemail extends \Magento\Backend\App\Action
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface|string
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface|string
     {
-        $emailEnableStatus = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_ENABLE_STATUS, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        $emailEnableStatus = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_ENABLE_STATUS, ScopeInterface::SCOPE_STORE);
 
         if ($emailEnableStatus) {
-            $emailItems['errorMessages'] = $this->getFatalErrorOfJobcode();
+            return '';
+        }
+
+        $errorMessages = $this->getFatalErrorOfJobcode();
+        $missedJobs = $this->getMissedCronJob();
+
+        $receiverEmailConfig = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_RECIPIENT, ScopeInterface::SCOPE_STORE);
+        $receiverEmailIds = explode(',', $receiverEmailConfig);
+
+        if (empty($receiverEmailIds) || (empty($errorMessages->getData()) && empty($missedJobs->getData()))) {
+            return '';
+        }
+
+        try {
+            $from = $this->senderResolver->resolve('general');
+
+            $emailItems = [
+                'errorMessages' => $errorMessages,
+                'missedJobs' => $missedJobs
+            ];
+
+            $this->sendEmailStatus($receiverEmailIds, $from, $emailItems);
+            $this->updateMailStatus($emailItems);
+        } catch (Exception $e) {
+            $this->logger->critical($e);
+        }
+
+        return '';
+            /*$emailItems['errorMessages'] = $this->getFatalErrorOfJobcode();
             $emailItems['missedJobs']    = $this->getMissedCronJob();
 
-            $receiverEmailConfig = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_RECIPIENT, \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            $receiverEmailConfig = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_RECIPIENT, ScopeInterface::SCOPE_STORE);
             $receiverEmailIds = explode(',', $receiverEmailConfig);
 
             if (!empty($receiverEmailIds) && (!empty($emailItems['errorMessages']->getData()) || !empty($emailItems['missedJobs']->getData()))) {
@@ -135,17 +148,15 @@ class Sendemail extends \Magento\Backend\App\Action
 
                     $this->sendEmailStatus($receiverEmailIds, $from, $emailItems);
                     $this->updateMailStatus($emailItems);
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->logger->critical($e);
                 }
             }
-        }
+        }*/
     }
 
     /**
      * Update is mail status after sending an email
-     *
-     * @param $emailItems
      */
     private function updateMailStatus($emailItems)
     {
@@ -155,7 +166,7 @@ class Sendemail extends \Magento\Backend\App\Action
                 $filters = [
                     'schedule_id' => $errorMessage['max_id'],
                     'job_code' => $errorMessage['job_code'],
-                    'status' => \Magento\Cron\Model\Schedule::STATUS_ERROR
+                    'status' => Schedule::STATUS_ERROR
                 ];
                 $collection->updateMailStatusByJobCode(['is_mail_sent' => self::IS_MAIL_STATUS], $filters);
             }
@@ -167,7 +178,7 @@ class Sendemail extends \Magento\Backend\App\Action
                 $filters = [
                     'schedule_id' => $missedJob['max_id'],
                     'job_code' => $missedJob['job_code'],
-                    'status' => \Magento\Cron\Model\Schedule::STATUS_MISSED
+                    'status' => Schedule::STATUS_MISSED
                 ];
                 $collection->updateMailStatusByJobCode(['is_mail_sent' => self::IS_MAIL_STATUS], $filters);
             }
@@ -176,13 +187,11 @@ class Sendemail extends \Magento\Backend\App\Action
 
     /**
      * Get Missed cron jobs count
-     *
-     * @return \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection
      */
-    private function getMissedCronJob()
+    private function getMissedCronJob(): Collection
     {
         $collection = $this->scheduleCollectionFactory->create();
-        $collection->getSelect()->where('status = "'.\Magento\Cron\Model\Schedule::STATUS_MISSED.'"')
+        $collection->getSelect()->where('status = "'. Schedule::STATUS_MISSED.'"')
             ->where('is_mail_sent is NULL')
             ->reset('columns')
             ->columns(['job_code', 'MAX(schedule_id) as max_id', 'COUNT(schedule_id) as totalmissed'])
@@ -193,13 +202,11 @@ class Sendemail extends \Magento\Backend\App\Action
 
     /**
      * Get Each Cron Job Fatal error
-     *
-     * @return \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection
      */
-    private function getFatalErrorOfJobcode()
+    private function getFatalErrorOfJobcode(): Collection
     {
         $collection = $this->scheduleCollectionFactory->create();
-        $collection->getSelect()->where('status = "'.\Magento\Cron\Model\Schedule::STATUS_ERROR.'"')
+        $collection->getSelect()->where('status = "'. Schedule::STATUS_ERROR.'"')
             ->where('error_message is not NULL')
             ->where('is_mail_sent is NULL')
             ->reset('columns')
@@ -211,15 +218,10 @@ class Sendemail extends \Magento\Backend\App\Action
 
     /**
      * Send Email
-     * @param $to
-     * @param $from
-     * @param $items
-     * @return $this
-     * @throws \Magento\Framework\Exception\MailException
      */
-    private function sendEmailStatus($to, $from, $items)
+    private function sendEmailStatus($to, $from, $items): self
     {
-        $templateOptions = ['area' => \Magento\Framework\App\Area::AREA_FRONTEND, 'store' => $this->storeManager->getStore()->getId()];
+        $templateOptions = ['area' => Area::AREA_FRONTEND, 'store' => $this->storeManager->getStore()->getId()];
         $templateVars = [
             'store' => $this->storeManager->getStore(),
             'items'=> $items,
@@ -227,13 +229,14 @@ class Sendemail extends \Magento\Backend\App\Action
 
         $this->inlineTranslation->suspend();
 
-        $this->transportBuilder->setTemplateIdentifier(self::TEST_EMAIL_TEMPLATE)
+        $transport = $this->transportBuilder
+            ->setTemplateIdentifier(self::TEST_EMAIL_TEMPLATE)
             ->setTemplateOptions($templateOptions)
             ->setTemplateVars($templateVars)
             ->setFrom($from)
-            ->addTo($to);
+            ->addTo($to)
+            ->getTransport();
 
-        $transport = $this->transportBuilder->getTransport();
         $transport->sendMessage();
 
         $this->inlineTranslation->resume();
