@@ -14,53 +14,37 @@
 
 namespace KiwiCommerce\CronScheduler\Block\Adminhtml\Schedule;
 
+use Exception;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\Block\Template;
+use Magento\Backend\Block\Template\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Framework\App\ProductMetadata;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+
 /**
  * Class Timeline
  * @package KiwiCommerce\CronScheduler\Block\Adminhtml\Schedule
  */
-class Timeline extends \Magento\Backend\Block\Template
+class Timeline extends Template
 {
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    public $datetime = null;
+    public DateTime $datetime;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Schedule
-     */
-    public $scheduleHelper = null;
+    public Schedule $scheduleHelper;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $collectionFactory = null;
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
-     */
-    public $timezone;
+    public CollectionFactory $collectionFactory;
 
-    /**
-     * @var \Magento\Framework\App\ProductMetadata
-     */
-    private $productMetaData;
+    public TimezoneInterface $timezone;
+    private ProductMetadata $productMetaData;
 
-    /**
-     * Class constructor.
-     * @param \Magento\Backend\Block\Template\Context $context
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $datetime
-     * @param \KiwiCommerce\CronScheduler\Helper\Schedule $scheduleHelper
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $collectionFactory
-     * @param \Magento\Framework\App\ProductMetadata $productMetaData
-     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone
-     * @param array $data
-     */
     public function __construct(
-        \Magento\Backend\Block\Template\Context $context,
-        \Magento\Framework\Stdlib\DateTime\DateTime $datetime,
-        \KiwiCommerce\CronScheduler\Helper\Schedule $scheduleHelper,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $collectionFactory,
-        \Magento\Framework\App\ProductMetadata $productMetaData,
-        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
+        Context $context,
+        DateTime $datetime,
+        Schedule $scheduleHelper,
+        CollectionFactory $collectionFactory,
+        ProductMetadata $productMetaData,
+        TimezoneInterface $timezone,
         array $data = []
     ) {
         $this->datetime = $datetime;
@@ -73,11 +57,8 @@ class Timeline extends \Magento\Backend\Block\Template
 
     /**
      * Get the data to construct the timeline
-     *
-     * @return array
-     * @throws \Exception
      */
-    public function getCronJobData()
+    public function getCronJobData(): array
     {
         $data = [];
         $schedules = $this->collectionFactory->create();
@@ -92,11 +73,11 @@ class Timeline extends \Magento\Backend\Block\Template
                 $start = $end = $schedule->getData('scheduled_at');
             }
 
-            if ($status == \Magento\Cron\Model\Schedule::STATUS_RUNNING) {
+            if ($status == Schedule::STATUS_RUNNING) {
                 $end = $this->timezone->date()->format('Y-m-d H:i:s');
             }
 
-            if ($status == \Magento\Cron\Model\Schedule::STATUS_ERROR && $end == null) {
+            if ($status == Schedule::STATUS_ERROR && $end == null) {
                 $end = $start;
             }
             $level   = $this->getStatusLevel($status);
@@ -117,33 +98,29 @@ class Timeline extends \Magento\Backend\Block\Template
 
     /**
      * Generate js date format for given date
-     * @param $date
-     * @return string
      */
-    private function getNewDateForJs($date)
+    private function getNewDateForJs($date): string
     {
         return "new Date(" . $this->datetime->date('Y,', $date) . ($this->datetime->date('m', $date) - 1) . $this->datetime->date(',d,H,i,s,0', $date) . ")";
     }
 
     /**
      * Get Status Level
-     * @param $status
-     * @return string
      */
-    private function getStatusLevel($status)
+    private function getStatusLevel($status): string
     {
         switch ($status) {
-            case \Magento\Cron\Model\Schedule::STATUS_ERROR:
-            case \Magento\Cron\Model\Schedule::STATUS_MISSED:
+            case Schedule::STATUS_ERROR:
+            case Schedule::STATUS_MISSED:
                 $level = 'major';
                 break;
-            case \Magento\Cron\Model\Schedule::STATUS_RUNNING:
+            case Schedule::STATUS_RUNNING:
                 $level = 'running';
                 break;
-            case \Magento\Cron\Model\Schedule::STATUS_PENDING:
+            case Schedule::STATUS_PENDING:
                 $level = 'minor';
                 break;
-            case \Magento\Cron\Model\Schedule::STATUS_SUCCESS:
+            case Schedule::STATUS_SUCCESS:
                 $level = 'notice';
                 break;
             default:
@@ -155,14 +132,8 @@ class Timeline extends \Magento\Backend\Block\Template
 
     /**
      * Get tooltip text for each cron job
-     * @param $schedule
-     * @param $level
-     * @param $status
-     * @param $start
-     * @param $end
-     * @return string
      */
-    private function getToolTip($schedule, $level, $status, $start, $end)
+    private function getToolTip($schedule, $level, $status, $start, $end): string
     {
         $tooltip = "<table class=>"
             . "<tr><td colspan='2'>"
@@ -231,9 +202,8 @@ class Timeline extends \Magento\Backend\Block\Template
 
     /**
      * Get the current date for javascript
-     * @return string
      */
-    public function getDateWithJs()
+    public function getDateWithJs(): string
     {
         $current = $this->datetime->date('U') + $this->datetime->getGmtOffSet('seconds');
         return "new Date(" . $this->datetime->date("Y,", $current) . ($this->datetime->date("m", $current) - 1) . $this->datetime->date(",d,H,i,s", $current) . ")";
