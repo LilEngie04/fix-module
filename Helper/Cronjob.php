@@ -14,31 +14,26 @@
 
 namespace KiwiCommerce\CronScheduler\Helper;
 
+use Magento\Cron\Model\Config\Reader\Db;
+use Magento\Cron\Model\Config\Reader\Xml;
+use Magento\Cron\Model\ConfigInterface;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Store\Model\ScopeInterface;
+
 /**
  * Class Cronjob
  * @package KiwiCommerce\CronScheduler\Helper
  */
-class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
+class Cronjob extends AbstractHelper
 {
-    /**
-     * @var \Magento\Cron\Model\ConfigInterface
-     */
-    public $cronConfig = null;
+    public ConfigInterface $cronConfig;
 
-    /**
-     * @var \Magento\Cron\Model\Config\Reader\Db
-     */
-    public $dbReader = null;
+    public Db $dbReader;
 
-    /**
-     * @var \Magento\Cron\Model\Config\Reader\Xml
-     */
-    public $reader = null;
+    public Xml $reader;
 
-    /**
-     * @var String
-     */
-    public $cronAppendString = '_cron_{$counter}';
+    public string $cronAppendString = '_cron_{$counter}';
 
     /**
      * Cron job db xml text
@@ -62,16 +57,12 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Class constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \Magento\Cron\Model\Config\Reader\Db $dbReader
-     * @param \Magento\Cron\Model\Config\Reader\Xml $reader
-     * @param \Magento\Cron\Model\ConfigInterface $cronConfig
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \Magento\Cron\Model\Config\Reader\Db $dbReader,
-        \Magento\Cron\Model\Config\Reader\Xml $reader,
-        \Magento\Cron\Model\ConfigInterface $cronConfig
+        Context $context,
+        Db $dbReader,
+        Xml $reader,
+        ConfigInterface $cronConfig
     ) {
         $this->cronConfig = $cronConfig;
         $this->dbReader = $dbReader;
@@ -84,7 +75,7 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
      *
      * @return array
      */
-    public function getJobData()
+    public function getJobData(): array
     {
         $data = [];
         $configJobs = $this->cronConfig->getJobs();
@@ -104,10 +95,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Get cron job detail.
-     * @param $jobcode
-     * @return array
      */
-    public function getJobDetail($jobcode)
+    public function getJobDetail($jobcode): array
     {
         $data = [];
         $configJobs = $this->cronConfig->getJobs();
@@ -129,7 +118,6 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Set job data for given job
-     * @param $job
      */
     private function setJobData($job)
     {
@@ -140,7 +128,7 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
                 if (isset($job['config_path'])) {
                     $job['config_schedule'] = $this->scopeConfig->getValue(
                         $job['config_path'],
-                        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                        ScopeInterface::SCOPE_STORE
                     );
                 } else {
                     $job['config_schedule'] = "";
@@ -156,10 +144,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Check is job code active
-     * @param $jobCode
-     * @return bool
      */
-    public function isJobActive($jobCode)
+    public function isJobActive($jobCode): bool
     {
         $result = false;
         $jobDetail = $this->getJobDetail($jobCode);
@@ -172,10 +158,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Filter Job codes as applied filters
-     * @param $filters
-     * @return array
      */
-    public function getAllFilterJobCodes($filters)
+    public function getAllFilterJobCodes($filters): array
     {
         $data = array_values($this->getJobData());
         $result = [];
@@ -195,12 +179,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Create unique job code name for multiple expression
-     * @param $jobData
-     * @param $jobCode
-     * @param $counter
-     * @return array
      */
-    public function getCronJobName($jobData, $jobCode, $counter)
+    public function getCronJobName($jobData, $jobCode, $counter): array
     {
         $data = array_values($jobData);
         $result = [];
@@ -225,13 +205,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Check cron exists with same instance method and expression
-     * @param $jobData
-     * @param $cronExpr
-     * @param $instance
-     * @param $method
-     * @return bool
      */
-    public function checkIfCronExists($jobData, $cronExpr, $data)
+    public function checkIfCronExists($jobData, $cronExpr, $data): bool
     {
         $instance = $data['instance'];
         $method   = $data['method'];
@@ -253,11 +228,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * trim the given array
-     * @param $array
-     *
-     * @return $array
      */
-    public function trimArray($array)
+    public function trimArray($array): array
     {
         $result = array_map('trim', $array);
         return $result;
@@ -265,11 +237,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Check is joncode of xml
-     * @param $jobCode
-     * @param $group
-     * @return bool
      */
-    public function isXMLJobcode($jobCode, $group)
+    public function isXMLJobcode($jobCode, $group): bool
     {
         $configJobs = $this->reader->read();
         $result = false;
@@ -282,11 +251,8 @@ class Cronjob extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Get job code type(db, xml, db_xml)
-     * @param $jobCode
-     * @param $group
-     * @return string
      */
-    private function getJobcodeType($jobCode, $group)
+    private function getJobcodeType($jobCode, $group): string
     {
         $xmlJobs = $this->reader->read();
         $dbJobs = $this->dbReader->get();

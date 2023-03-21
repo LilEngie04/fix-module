@@ -14,6 +14,9 @@
 
 namespace KiwiCommerce\CronScheduler\Cron;
 
+use Exception;
+use Magento\Cron\Model\Schedule;
+
 /**
  * Class Status
  * @package KiwiCommerce\CronScheduler\Cron
@@ -22,10 +25,8 @@ class Status
 {
     /**
      * Set cron status
-     * @param \Magento\Cron\Model\Schedule|null $schedule
-     * @throws \Exception
      */
-    public function checkstatus(\Magento\Cron\Model\Schedule $schedule = null)
+    public function checkstatus(Schedule $schedule = null)
     {
         $schedule->setMessages(__("Cron is Working"));
         $schedule->save();
