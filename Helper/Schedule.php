@@ -14,47 +14,37 @@
 
 namespace KiwiCommerce\CronScheduler\Helper;
 
+use DateTime;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\ProductMetadata;
+use Magento\Framework\Message\ManagerInterface;
+
 /**
  * Class Schedule
  * @package KiwiCommerce\CronScheduler\Helper
  */
-class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
+class Schedule extends AbstractHelper
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var \Magento\Framework\Message\ManagerInterface
-     */
-    public $messageManager = null;
+    public ManagerInterface $messageManager;
 
-    /**
-     * @var \Magento\Framework\App\ProductMetadata
-     */
-    public $productMetaData = null;
+    public ProductMetadata $productMetaData;
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    public $datetime = null;
+    public DateTime $datetime;
 
 
     /**
      * Class constructor.
-     * @param \Magento\Framework\App\Helper\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \Magento\Framework\Message\ManagerInterface $messageManager
-     * @param \Magento\Framework\App\ProductMetadata $productMetaData
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $datetime
      */
     public function __construct(
-        \Magento\Framework\App\Helper\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \Magento\Framework\Message\ManagerInterface $messageManager,
-        \Magento\Framework\App\ProductMetadata $productMetaData,
-        \Magento\Framework\Stdlib\DateTime\DateTime $datetime
+        Context $context,
+        CollectionFactory $scheduleCollectionFactory,
+        ManagerInterface $messageManager,
+        ProductMetadata $productMetaData,
+        DateTime $datetime
     ) {
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->messageManager = $messageManager;
@@ -66,8 +56,6 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Store pid in cron table
-     *
-     * @param $schedule
      */
     public function setPid(&$schedule)
     {
@@ -78,9 +66,6 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Calculate actual CPU usage in time ms
-     * @param $ru
-     * @param $rus
-     * @param $schedule
      */
     public function setCpuUsage($ru, $rus, &$schedule)
     {
@@ -92,13 +77,8 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Get Usage
-     *
-     * @param $ru
-     * @param $rus
-     * @param $index
-     * @return float|int
      */
-    private function rutime($ru, $rus, $index)
+    private function rutime($ru, $rus, $index): float|int
     {
         return ($ru["ru_$index.tv_sec"]*1000 + intval($ru["ru_$index.tv_usec"]/1000))
             -  ($rus["ru_$index.tv_sec"]*1000 + intval($rus["ru_$index.tv_usec"]/1000));
@@ -117,16 +97,13 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Generates filtered time input from user to formatted time (YYYY-MM-DD)
-     *
-     * @param mixed $time
-     * @return string
      */
-    public function filterTimeInput($time)
+    public function filterTimeInput($time): string
     {
         $matches = [];
         preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
         $time = $matches[1] . " " . $matches[2];
-        return DateTime::format('%Y-%m-%d %H:%M:00', date($time));
+        return DateTime::createFromFormat('%Y-%m-%d %H:%M:00', date($time));
     }
 
     /**
@@ -136,7 +113,7 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
     public function getLastCronStatusMessage()
     {
         $magentoVersion = $this->getMagentoversion();
-        $currentTime = new \DateTime();
+        $currentTime = new DateTime();
         $lastCronStatus = $this->scheduleCollectionFactory->create()->getLastCronStatus();
         if (!empty($lastCronStatus)) {
             $lastCronStatusTime = DateTime::createFromFormat('Y-m-d H:i:s', $lastCronStatus);
@@ -154,9 +131,8 @@ class Schedule extends \Magento\Framework\App\Helper\AbstractHelper
 
     /**
      * Get Latest magento Version
-     * @return mixed
      */
-    public function getMagentoversion()
+    public function getMagentoversion(): string
     {
         $explodedVersion = explode("-", $this->productMetaData->getVersion());
         $magentoversion = $explodedVersion[0];
