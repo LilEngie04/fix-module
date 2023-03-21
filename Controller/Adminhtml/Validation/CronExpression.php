@@ -14,29 +14,31 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Validation;
 
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class CronExpression
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Validation
  */
-class CronExpression extends \Magento\Backend\App\Action
+class CronExpression extends Action
 {
     /**
      * Class constructor
-     * @param \Magento\Backend\App\Action\Context $context
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context
+        Context $context
     ) {
         parent::__construct($context);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         if ($this->getRequest()->isXmlHttpRequest()) {
             $data = $this->getRequest()->getPostValue();
