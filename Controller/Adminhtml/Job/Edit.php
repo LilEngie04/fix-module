@@ -14,25 +14,25 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Job;
 
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Edit
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Job
  */
-class Edit extends \Magento\Backend\App\Action
+class Edit extends Action
 {
-    /**
-     * @var string
-     */
-    protected $aclResource = "job_editjob";
+    protected string $aclResource = "job_editjob";
 
     /**
      * Class constructor
-     * @param \Magento\Backend\App\Action\Context $context
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context
+        Context $context
     ) {
         parent::__construct($context);
     }
@@ -41,16 +41,15 @@ class Edit extends \Magento\Backend\App\Action
      * Is action allowed?
      * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
         return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
         $resultPage->setActiveMenu("Magento_Backend::system");
