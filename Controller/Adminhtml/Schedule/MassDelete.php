@@ -14,37 +14,31 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Schedule;
 
+use Exception;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Ui\Component\MassAction\Filter;
+
 /**
  * Class MassDelete
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Schedule
  */
-class MassDelete extends \Magento\Backend\App\Action
+class MassDelete extends Action
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var \Magento\Ui\Component\MassAction\Filter
-     */
-    protected $filter;
+    protected Filter $filter;
 
-    /**
-     * @var string
-     */
-    protected $aclResource = "schedule_massdelete";
+    protected string $aclResource = "schedule_massdelete";
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \Magento\Ui\Component\MassAction\Filter $filter
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \Magento\Ui\Component\MassAction\Filter $filter
+        Context $context,
+        CollectionFactory $scheduleCollectionFactory,
+        Filter $filter
     ) {
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->filter = $filter;
@@ -53,9 +47,8 @@ class MassDelete extends \Magento\Backend\App\Action
 
     /**
      * Is action allowed?
-     * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
         return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
     }
@@ -75,7 +68,7 @@ class MassDelete extends \Magento\Backend\App\Action
 
             $this->messageManager->addSuccessMessage(__('A total of %1 record(s) have been deleted.', $collectionSize));
             return $this->_redirect('*/*/listing');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
             return $this->_redirect('*/*/listing');
         }
