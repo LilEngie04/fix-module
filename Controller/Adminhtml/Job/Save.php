@@ -29,27 +29,14 @@ use Magento\Framework\Controller\ResultInterface;
  */
 class Save extends Action
 {
-    /**
-     * @var TypeListInterface
-     */
-    public $cacheTypeList;
+    public TypeListInterface $cacheTypeList;
 
-    /**
-     * @var Cronjob
-     */
-    public $jobHelper = null;
+    public Cronjob $jobHelper;
 
-    /**
-     * @var Job
-     */
-    public $jobModel;
+    public Job $jobModel;
 
     /**
      * Class constructor.
-     * @param Context $context
-     * @param TypeListInterface $cacheTypeList
-     * @param Cronjob $jobHelper
-     * @param Job $jobModel
      */
     public function __construct(
         Context $context,
@@ -65,9 +52,8 @@ class Save extends Action
 
     /**
      * Execute action
-     * @return ResponseInterface|ResultInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         $data = $this->getRequest()->getPostValue();
 
@@ -127,13 +113,10 @@ class Save extends Action
 
     /**
      * Pop last element from array
-     * @param $data
-     * @param $error
-     * @return mixed
      */
-    private function popElement($data, $error, $cronExpr)
+    private function popElement(array $data, array $error, array $cronExpr): array
     {
-        if (isset($data['oldexpressionvalue']) && $cronExpr == $data['oldexpressionvalue']) {
+        if (array_key_exists('oldexpressionvalue', $data) && $cronExpr == $data['oldexpressionvalue']) {
             array_pop($error);
         }
 
