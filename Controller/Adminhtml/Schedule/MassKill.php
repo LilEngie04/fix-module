@@ -13,49 +13,44 @@
  */
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Schedule;
 
+use Exception;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Ui\Component\MassAction\Filter;
+
 /**
  * Class MassKill
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Schedule
  */
-class MassKill extends \Magento\Backend\App\Action
+class MassKill extends Action
 {
     /**
      * Constant for status killed
      */
     const STATUS_KILLED = 'killed';
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    public $dateTime;
+    public DateTime $dateTime;
 
-    /**
-     * @var \Magento\Ui\Component\MassAction\Filter
-     */
-    protected $filter;
+    protected Filter $filter;
 
-    /**
-     * @var string
-     */
-    protected $aclResource = "schedule_masskill";
+    protected string $aclResource = "schedule_masskill";
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \Magento\Ui\Component\MassAction\Filter $filter
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \Magento\Ui\Component\MassAction\Filter $filter
+        Context $context,
+        CollectionFactory $scheduleCollectionFactory,
+        DateTime $dateTime,
+        Filter $filter
     ) {
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->dateTime = $dateTime;
@@ -65,19 +60,16 @@ class MassKill extends \Magento\Backend\App\Action
 
     /**
      * Is action allowed?
-     * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
         return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         $data = $this->getRequest()->getPostValue();
 
@@ -95,7 +87,7 @@ class MassKill extends \Magento\Backend\App\Action
         }
 
         try {
-            $collection->addFieldToFilter('status', \Magento\Cron\Model\Schedule::STATUS_RUNNING)
+            $collection->addFieldToFilter('status', Schedule::STATUS_RUNNING)
                 ->addFieldToFilter(
                     'finished_at',
                     ['null' => true]
@@ -119,11 +111,11 @@ class MassKill extends \Magento\Backend\App\Action
                 if (function_exists('posix_getsid') && posix_getsid($pid) === false) {
                     $errorScheduleIds[] = $scheduleId;
                 } else {
-                    $finished_at = strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
-                    $dbrunningjobs->setData('status', self::STATUS_KILLED);
-                    $dbrunningjobs->setData('messages', __('It is killed by admin.'));
-                    $dbrunningjobs->setData('finished_at', $finished_at);
-                    $dbrunningjobs->save();
+                    $finished_at = DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
+                    $dbrunningjobs->setData('status', self::STATUS_KILLED)
+                    ->setData('messages', __('It is killed by admin.'))
+                    ->setData('finished_at', $finished_at)
+                    ->save();
 
                     posix_kill($pid, 9);
                     $killedScheduleIds[] = $scheduleId;
@@ -137,7 +129,7 @@ class MassKill extends \Magento\Backend\App\Action
             }
 
             return $this->_redirect('*/*/listing');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
             return $this->_redirect('*/*/listing');
         }
