@@ -14,27 +14,27 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Validation;
 
+use KiwiCommerce\CronScheduler\Helper\Cronjob;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class UniqueJobCode
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Validation
  */
-class UniqueJobCode extends \Magento\Backend\App\Action
+class UniqueJobCode extends Action
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Cronjob
-     */
-    public $jobHelper = null;
+    public Cronjob $jobHelper;
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
+        Context $context,
+        Cronjob $jobHelper
     ) {
         $this->jobHelper = $jobHelper;
         parent::__construct($context);
@@ -42,9 +42,8 @@ class UniqueJobCode extends \Magento\Backend\App\Action
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         if ($this->getRequest()->isXmlHttpRequest()) {
             $data = $this->getRequest()->getPostValue();
