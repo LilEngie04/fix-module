@@ -14,32 +14,29 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Job;
 
+use KiwiCommerce\CronScheduler\Helper\Schedule;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\Controller\ResultFactory;
+use Magento\Framework\Controller\ResultInterface;
 
 /**
  * Class Listing
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Job
  */
-class Listing extends \Magento\Backend\App\Action
+class Listing extends Action
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Schedule
-     */
-    public $scheduleHelper = null;
+    public Schedule $scheduleHelper;
 
-    /**
-     * @var string
-     */
-    protected $aclResource = "job_listing";
+    protected string $aclResource = "job_listing";
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Helper\Schedule $scheduleHelper
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Helper\Schedule $scheduleHelper
+        Context $context,
+        Schedule $scheduleHelper
     ) {
         $this->scheduleHelper = $scheduleHelper;
         parent::__construct($context);
@@ -47,25 +44,23 @@ class Listing extends \Magento\Backend\App\Action
 
     /**
      * Is action allowed?
-     * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
         return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
 
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         $this->scheduleHelper->getLastCronStatusMessage();
         $resultPage = $this->resultFactory->create(ResultFactory::TYPE_PAGE);
-        $resultPage->setActiveMenu("Magento_Backend::system");
-        $resultPage->getConfig()->getTitle()->prepend(__('Cron Jobs'));
-        $resultPage->addBreadcrumb(__('Cron Scheduler'), __('Cron Scheduler'));
+        $resultPage->setActiveMenu("Magento_Backend::system")
+        ->getConfig()->getTitle()->prepend(__('Cron Jobs'))
+        ->addBreadcrumb(__('Cron Scheduler'), __('Cron Scheduler'));
         return $resultPage;
     }
 }
