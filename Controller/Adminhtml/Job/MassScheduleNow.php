@@ -14,59 +14,48 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Job;
 
+use DateTimeZone;
+use Exception;
+use KiwiCommerce\CronScheduler\Helper\Cronjob;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Cron\Model\Schedule;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+
 /**
  * Class MassScheduleNow
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Job
  */
-class MassScheduleNow extends \Magento\Backend\App\Action
+class MassScheduleNow extends Action
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\TimezoneInterface
-     */
-    public $timezone;
+    public TimezoneInterface $timezone;
 
-    /**
-     * @var \Magento\Framework\Stdlib\DateTime\DateTime
-     */
-    public $dateTime;
+    public DateTime $dateTime;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Schedule
-     */
-    public $scheduleHelper = null;
+    public Schedule $scheduleHelper;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Cronjob
-     */
-    public $jobHelper = null;
+    public Cronjob $jobHelper;
 
-    /**
-     * @var string
-     */
-    protected $aclResource = "job_massschedule";
+    protected string $aclResource = "job_massschedule";
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
-     * @param \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone
-     * @param \Magento\Framework\Stdlib\DateTime\DateTime $dateTime
-     * @param \KiwiCommerce\CronScheduler\Helper\Schedule $scheduleHelper
-     * @param \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory,
-        \Magento\Framework\Stdlib\DateTime\TimezoneInterface $timezone,
-        \Magento\Framework\Stdlib\DateTime\DateTime $dateTime,
-        \KiwiCommerce\CronScheduler\Helper\Schedule $scheduleHelper,
-        \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
-    ) {
+        Context           $context,
+        CollectionFactory $scheduleCollectionFactory,
+        TimezoneInterface $timezone,
+        DateTime          $dateTime,
+        Schedule          $scheduleHelper,
+        Cronjob           $jobHelper
+    )
+    {
         $this->scheduleCollectionFactory = $scheduleCollectionFactory;
         $this->timezone = $timezone;
         $this->dateTime = $dateTime;
@@ -78,18 +67,17 @@ class MassScheduleNow extends \Magento\Backend\App\Action
 
     /**
      * Is action allowed?
-     * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
-        return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
+        return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::' . $this->aclResource);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
+
+    public function execute(): ResponseInterface|ResultInterface
     {
         $data = $this->getRequest()->getPostValue();
 
@@ -103,7 +91,7 @@ class MassScheduleNow extends \Magento\Backend\App\Action
 
         if (empty($jobCodes)) {
             $this->messageManager->addErrorMessage(__('Selected jobs can not be scheduled now.'));
-            return $this->_redirect('*/*/listing');
+            return $this->redirect('*/*/listing');
         }
 
         try {
@@ -113,31 +101,33 @@ class MassScheduleNow extends \Magento\Backend\App\Action
                     $collection = $this->scheduleCollectionFactory->create()->getNewEmptyItem();
 
                     $magentoVersion = $this->scheduleHelper->getMagentoversion();
+                    $createdAt = $this->timezone->scopeTimestampToDateTime()->format('Y-m-d H:i:s');
+                    $scheduleAt = $this->scheduleHelper->filterTimeInput($this->timezone->scopeTimestampToDateTime());
+
                     if (version_compare($magentoVersion, "2.2.0") >= 0) {
-                        $createdAt  = strftime('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
-                        $scheduleAt = strftime('%Y-%m-%dT%H:%M:%S', $this->dateTime->gmtTimestamp());
+                        $scheduleAt = $scheduleAt->format('Y-m-d\TH:i:s');
                     } else {
-                        $createdAt  = strftime('%Y-%m-%d %H:%M:%S', $this->timezone->scopeTimeStamp());
-                        $scheduleAt = strftime('%Y-%m-%dT%H:%M:%S', $this->timezone->scopeTimeStamp());
+                        $createdAt = $createdAt->format('Y-m-d H:i:s');
+                        $scheduleAt = $scheduleAt->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s');
                     }
 
                     $collection->setData('job_code', $jobCode);
-                    $collection->setData('status', \Magento\Cron\Model\Schedule::STATUS_PENDING);
+                    $collection->setData('status', Schedule::STATUS_PENDING);
                     $collection->setData('created_at', $createdAt);
-                    $collection->setData('scheduled_at', $this->scheduleHelper->filterTimeInput($scheduleAt));
+                    $collection->setData('scheduled_at', $scheduleAt);
                     $collection->save();
                     $success[] = $jobCode;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
-            return $this->_redirect('*/*/listing');
+            return $this->redirect('*/*/listing');
         }
 
         if (isset($success) && !empty($success)) {
             $this->messageManager->addSuccessMessage(__('You scheduled selected jobs now.'));
         }
 
-        return $this->_redirect('*/*/listing');
+        return $this->redirect('*/*/listing');
     }
 }
