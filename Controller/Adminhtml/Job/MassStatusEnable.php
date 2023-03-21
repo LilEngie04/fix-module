@@ -14,31 +14,29 @@
 
 namespace KiwiCommerce\CronScheduler\Controller\Adminhtml\Job;
 
+use Exception;
+use KiwiCommerce\CronScheduler\Helper\Cronjob;
+use KiwiCommerce\CronScheduler\Helper\Schedule;
+use KiwiCommerce\CronScheduler\Model\Job;
+use Magento\Backend\App\Action;
+use Magento\Backend\App\Action\Context;
+use Magento\Framework\App\Cache\TypeListInterface;
+use Magento\Framework\App\ResponseInterface;
+use Magento\Framework\Controller\ResultInterface;
+
 /**
  * Class MassStatusEnable
  * @package KiwiCommerce\CronScheduler\Controller\Adminhtml\Job
  */
-class MassStatusEnable extends \Magento\Backend\App\Action
+class MassStatusEnable extends Action
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Schedule
-     */
-    public $jobHelper = null;
+    public Schedule $jobHelper;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\Job
-     */
-    public $jobModel;
+    public Job $jobModel;
 
-    /**
-     * @var \Magento\Framework\App\Cache\TypeListInterface
-     */
-    public $cacheTypeList;
+    public TypeListInterface $cacheTypeList;
 
-    /**
-     * @var string
-     */
-    protected $aclResource = "job_massstatuschange";
+    protected string $aclResource = "job_massstatuschange";
 
     /**
      * Cron job disable status
@@ -47,16 +45,12 @@ class MassStatusEnable extends \Magento\Backend\App\Action
 
     /**
      * Class constructor.
-     * @param \Magento\Backend\App\Action\Context $context
-     * @param \KiwiCommerce\CronScheduler\Model\Job $jobModel
-     * @param \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList
-     * @param \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
      */
     public function __construct(
-        \Magento\Backend\App\Action\Context $context,
-        \KiwiCommerce\CronScheduler\Model\Job $jobModel,
-        \Magento\Framework\App\Cache\TypeListInterface $cacheTypeList,
-        \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
+        Context $context,
+        Job $jobModel,
+        TypeListInterface $cacheTypeList,
+        Cronjob $jobHelper
     ) {
         $this->jobHelper = $jobHelper;
         $this->jobModel = $jobModel;
@@ -66,18 +60,16 @@ class MassStatusEnable extends \Magento\Backend\App\Action
 
     /**
      * Is action allowed?
-     * @return boolean
      */
-    protected function _isAllowed()
+    protected function _isAllowed(): bool
     {
         return $this->_authorization->isAllowed('KiwiCommerce_CronScheduler::'.$this->aclResource);
     }
 
     /**
      * Execute action
-     * @return \Magento\Framework\App\ResponseInterface|\Magento\Framework\Controller\ResultInterface
      */
-    public function execute()
+    public function execute(): ResponseInterface|ResultInterface
     {
         $data = $this->getRequest()->getPostValue();
 
@@ -101,7 +93,7 @@ class MassStatusEnable extends \Magento\Backend\App\Action
             }
             $this->cacheTypeList->cleanType('config');
             $this->messageManager->addSuccessMessage(__('You enabled selected jobs.'));
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->messageManager->addErrorMessage($e->getMessage());
             return $this->_redirect('*/*/listing');
         }
