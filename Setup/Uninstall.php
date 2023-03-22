@@ -14,31 +14,31 @@
 
 namespace KiwiCommerce\CronScheduler\Setup;
 
+use Magento\Framework\Setup\ModuleContextInterface;
+use Magento\Framework\Setup\SchemaSetupInterface;
+use Magento\Framework\Setup\UninstallInterface;
+
 /**
  * Class Uninstall
  * @package KiwiCommerce\CronScheduler\Setup
  */
-class Uninstall implements \Magento\Framework\Setup\UninstallInterface
+class Uninstall implements UninstallInterface
 {
     /**
      * Module uninstall code
-     *
-     * @param \Magento\Framework\Setup\SchemaSetupInterface $setup
-     * @param \Magento\Framework\Setup\ModuleContextInterface $context
-     * @return void
      */
     public function uninstall(
-        \Magento\Framework\Setup\SchemaSetupInterface $setup,
-        \Magento\Framework\Setup\ModuleContextInterface $context
+        SchemaSetupInterface $setup,
+        ModuleContextInterface $context
     ) {
         $uninstaller = $setup;
         $uninstaller->startSetup();
 
-        $uninstaller->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'pid', null);
-        $uninstaller->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'memory_usage', null);
-        $uninstaller->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'cpu_usage', null);
-        $uninstaller->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'system_usage', null);
-        $uninstaller->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'is_mail_sent', null);
+        $uninstaller->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'pid', null)
+        ->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'memory_usage', null)
+        ->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'cpu_usage', null)
+        ->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'system_usage', null)
+        ->getConnection()->dropColumn($uninstaller->getTable('cron_schedule'), 'is_mail_sent', null);
 
         $uninstaller->endSetup();
     }
