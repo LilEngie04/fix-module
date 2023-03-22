@@ -14,33 +14,28 @@
 
 namespace KiwiCommerce\CronScheduler\Ui\DataProvider\Group;
 
-class Options implements \Magento\Framework\Data\OptionSourceInterface
-{
-    /**
-     * @var array
-     */
-    public $options = null;
+use Magento\Cron\Model\ConfigInterface;
+use Magento\Framework\Data\OptionSourceInterface;
 
-    /**
-     * @var \Magento\Cron\Model\ConfigInterface
-     */
-    public $cronConfig = null;
+class Options implements OptionSourceInterface
+{
+    public array $options;
+
+    public ConfigInterface $cronConfig;
 
     /**
      * Class constructor
-     * @param \Magento\Cron\Model\ConfigInterface $cronConfig
      */
     public function __construct(
-        \Magento\Cron\Model\ConfigInterface $cronConfig
+        ConfigInterface $cronConfig
     ) {
         $this->cronConfig = $cronConfig;
     }
 
     /**
      * Get all options available
-     * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         if ($this->options === null) {
             $configJobs = $this->cronConfig->getJobs();
