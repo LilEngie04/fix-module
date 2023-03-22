@@ -14,7 +14,9 @@
 
 namespace KiwiCommerce\CronScheduler\Ui\DataProvider\Form;
 
+use KiwiCommerce\CronScheduler\Helper\Cronjob;
 use Magento\Cron\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use Magento\Ui\DataProvider\AbstractDataProvider;
 use Magento\Framework\App\RequestInterface;
 
@@ -24,44 +26,23 @@ use Magento\Framework\App\RequestInterface;
  */
 class CronJobDataProvider extends AbstractDataProvider
 {
-    /**
-     * @var array
-     */
-    public $loadedData;
+    public array $loadedData;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Helper\Cronjob
-     */
-    public $jobHelper = null;
+    public Cronjob $jobHelper;
 
-    /**
-     * @var RequestInterface
-     */
-    public $request;
-    /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
-     */
-    public $scopeConfig;
+    public RequestInterface $request;
+    public ScopeConfigInterface $scopeConfig;
 
     /**
      * Class constructor.
-     * @param string $name
-     * @param string $primaryFieldName
-     * @param string $requestFieldName
-     * @param CollectionFactory $collectionFactory
-     * @param \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
-     * @param RequestInterface $request
-     * @param array $meta
-     * @param array $data
      */
     public function __construct(
         $name,
         $primaryFieldName,
         $requestFieldName,
         CollectionFactory $collectionFactory,
-        \KiwiCommerce\CronScheduler\Helper\Cronjob $jobHelper,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
+        Cronjob $jobHelper,
+        ScopeConfigInterface $scopeConfig,
         RequestInterface $request,
         array $meta = [],
         array $data = []
@@ -75,9 +56,8 @@ class CronJobDataProvider extends AbstractDataProvider
 
     /**
      * {@inheritdoc}
-     * @return array
      */
-    public function getData()
+    public function getData(): array
     {
         if ($this->loadedData) {
             return $this->loadedData;
