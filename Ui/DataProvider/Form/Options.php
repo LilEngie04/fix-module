@@ -14,22 +14,20 @@
 
 namespace KiwiCommerce\CronScheduler\Ui\DataProvider\Form;
 
+use Magento\Framework\Data\OptionSourceInterface;
+
 /**
  * Class Options
  * @package KiwiCommerce\CronScheduler\Ui\DataProvider\Form
  */
-class Options implements \Magento\Framework\Data\OptionSourceInterface
+class Options implements OptionSourceInterface
 {
-    /**
-     * @var array
-     */
-    public $options = null;
+    public array $options;
 
     /**
      * Get all options available
-     * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         if ($this->options === null) {
             $this->options = [
