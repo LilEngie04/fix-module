@@ -14,7 +14,13 @@
 
 namespace KiwiCommerce\CronScheduler\Model;
 
-use \Magento\Framework\Model\AbstractModel;
+use Magento\Framework\App\Config\ConfigResource\ConfigInterface;
+use Magento\Framework\App\Config\ScopeConfigInterface;
+use Magento\Framework\Data\Collection\AbstractDb;
+use Magento\Framework\Model\AbstractModel;
+use Magento\Framework\Model\Context;
+use Magento\Framework\Model\ResourceModel\AbstractResource;
+use Magento\Framework\Registry;
 
 /**
  * Class Job
@@ -22,46 +28,25 @@ use \Magento\Framework\Model\AbstractModel;
  */
 class Job extends AbstractModel
 {
-    /**
-     * @var string
-     */
-    public $cronExprTemplate = 'crontab/{$group}/jobs/{$jobcode}/schedule/cron_expr';
+    public string $cronExprTemplate = 'crontab/{$group}/jobs/{$jobcode}/schedule/cron_expr';
 
-    /**
-     * @var string
-     */
-    public $cronModelTemplate = 'crontab/{$group}/jobs/{$jobcode}/run/model';
+    public string $cronModelTemplate = 'crontab/{$group}/jobs/{$jobcode}/run/model';
 
-    /**
-     * @var string
-     */
-    public $cronStatusTemplate = 'crontab/{$group}/jobs/{$jobcode}/is_active';
+    public string $cronStatusTemplate = 'crontab/{$group}/jobs/{$jobcode}/is_active';
 
-    /**
-     * @var string
-     */
-    public $scope = \Magento\Framework\App\Config\ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
+    public string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
 
-    /**
-     * @var \Magento\Framework\App\Config\ConfigResource\ConfigInterface
-     */
-    public $configInterface = null;
+    public ConfigInterface $configInterface;
 
     /**
      * class constructor
-     * @param \Magento\Framework\Model\Context $context
-     * @param \Magento\Framework\Registry $registry
-     * @param \Magento\Framework\Model\ResourceModel\AbstractResource|null $resource
-     * @param \Magento\Framework\Data\Collection\AbstractDb|null $resourceCollection
-     * @param \Magento\Framework\App\Config\ConfigResource\ConfigInterface $configInterface
-     * @param array $data
      */
     public function __construct(
-        \Magento\Framework\Model\Context $context,
-        \Magento\Framework\Registry $registry,
-        \Magento\Framework\App\Config\ConfigResource\ConfigInterface $configInterface,
-        \Magento\Framework\Model\ResourceModel\AbstractResource $resource = null,
-        \Magento\Framework\Data\Collection\AbstractDb $resourceCollection = null,
+        Context $context,
+        Registry $registry,
+        ConfigInterface $configInterface,
+        AbstractResource $resource = null,
+        AbstractDb $resourceCollection = null,
         array $data = []
     ) {
         parent::__construct($context, $registry, $resource, $resourceCollection, $data);
@@ -71,9 +56,6 @@ class Job extends AbstractModel
 
     /**
      * Save cron job for given data and expression
-     * @param $data
-     * @param $cronExpr
-     * @param $jobCode
      */
     public function saveJob($data, $cronExpr, $jobCode)
     {
@@ -99,9 +81,6 @@ class Job extends AbstractModel
 
     /**
      * Delete the job
-     *
-     * @param $group
-     * @param $jobCode
      */
     public function deleteJob($group, $jobCode)
     {
@@ -123,9 +102,6 @@ class Job extends AbstractModel
 
     /**
      * Change job Status
-     *
-     * @param $jobData
-     * @param $status
      */
     public function changeJobStatus($jobData, $status)
     {
