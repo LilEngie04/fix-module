@@ -35,56 +35,56 @@ class InstallSchema implements InstallSchemaInterface
         $installer->startSetup();
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'pid', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            'type' => Table::TYPE_TEXT,
             'length' => '100',
             'nullable' => true,
             'comment' => 'Process id of the cron'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'memory_usage', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+            'type' => Table::TYPE_DECIMAL,
             'length' => '12,2',
             'nullable' => true,
             'comment' => 'Memory Usage of the Cron'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'cpu_usage', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+            'type' => Table::TYPE_DECIMAL,
             'length' => '12,2',
             'nullable' => true,
             'comment' => 'CPU Usage of the Cron'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'system_usage', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_DECIMAL,
+            'type' => Table::TYPE_DECIMAL,
             'length' => '12,2',
             'nullable' => true,
             'comment' => 'System Usage of the Cron'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'is_mail_sent', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_BOOLEAN,
+            'type' => Table::TYPE_BOOLEAN,
             'length' => 1,
             'nullable' => true,
             'comment' => 'Is mail sent for Missing Crons?'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'error_message', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            'type' => Table::TYPE_TEXT,
             'length' => 500,
             'nullable' => true,
             'comment' => 'FATAL Error/ Execption Message'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'error_file', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            'type' => Table::TYPE_TEXT,
             'length' => 500,
             'nullable' => true,
             'comment' => 'Error File Name'
         ]);
 
         $installer->getConnection()->addColumn($installer->getTable('cron_schedule'), 'error_line', [
-            'type' => \Magento\Framework\DB\Ddl\Table::TYPE_TEXT,
+            'type' => Table::TYPE_TEXT,
             'length' => 50,
             'nullable' => true,
             'comment' => 'Error Line Number'
