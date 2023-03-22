@@ -16,19 +16,13 @@ namespace KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule;
 
 /**
  * Class Collection
- * @package KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule
  */
 class Collection extends \Magento\Cron\Model\ResourceModel\Schedule\Collection
 {
-    /**
-     * @var string
-     */
     protected $_idFieldName = "schedule_id";
 
     /**
      * Update mail status for given filter.
-     * @param $data
-     * @param $filter
      */
     public function updateMailStatusByJobCode($data, $filter)
     {
@@ -49,9 +43,8 @@ class Collection extends \Magento\Cron\Model\ResourceModel\Schedule\Collection
 
     /**
      * Get the last Cron Status
-     * @return string | null
      */
-    public function getLastCronStatus()
+    public function getLastCronStatus(): string|null
     {
         $this->getSelect()->reset('columns')
             ->columns(['executed_at'])
@@ -68,11 +61,11 @@ class Collection extends \Magento\Cron\Model\ResourceModel\Schedule\Collection
 
     /**
      * Get Schedule task status
-     * @return $this
      */
-    public function getScheduleTaskStatuses()
+    public function getScheduleTaskStatuses(): self
     {
-        $this->getSelect()->reset('columns')
+        $this->getSelect()
+            ->reset('columns')
             ->columns('DISTINCT(status) as status')
             ->order('status ASC');
 
