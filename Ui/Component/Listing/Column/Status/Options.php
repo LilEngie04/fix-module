@@ -15,38 +15,33 @@
 
 namespace KiwiCommerce\CronScheduler\Ui\Component\Listing\Column\Status;
 
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Framework\Data\OptionSourceInterface;
+
 /**
  * Class Options
  * @package KiwiCommerce\CronScheduler\Ui\Component\Listing\Column\Status
  */
-class Options implements \Magento\Framework\Data\OptionSourceInterface
+class Options implements OptionSourceInterface
 {
-    /**
-     * @var array
-     */
-    public $options = null;
+    public array $options;
 
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory
-     */
-    public $scheduleCollectionFactory = null;
+    public CollectionFactory $scheduleCollectionFactory;
 
     /**
      * Options constructor.
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
      */
     public function __construct(
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $scheduleCollectionFactory
+        CollectionFactory $scheduleCollectionFactory
     ) {
-    
+
         $this->scheduleCollectionFactory = $scheduleCollectionFactory->create();
     }
 
     /**
      * Get all options available
-     * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
         if ($this->options === null) {
             $this->options = [];
