@@ -25,18 +25,8 @@ use Magento\Framework\UrlInterface;
  */
 class Actions extends Column
 {
-    /**
-     * @var UrlInterface
-     */
-    public $urlBuilder;
+    public UrlInterface $urlBuilder;
 
-    /**
-     * @param ContextInterface $context
-     * @param UiComponentFactory $uiComponentFactory
-     * @param UrlInterface $urlBuilder
-     * @param array $components
-     * @param array $data
-     */
     public function __construct(
         ContextInterface $context,
         UiComponentFactory $uiComponentFactory,
@@ -50,11 +40,8 @@ class Actions extends Column
 
     /**
      * Prepare Data Source
-     *
-     * @param array $dataSource
-     * @return array
      */
-    public function prepareDataSource(array $dataSource)
+    public function prepareDataSource(array $dataSource): array
     {
         if (isset($dataSource['data']['items'])) {
             foreach ($dataSource['data']['items'] as &$item) {
