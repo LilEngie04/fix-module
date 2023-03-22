@@ -14,31 +14,26 @@
 
 namespace KiwiCommerce\CronScheduler\Ui\DataProvider;
 
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection;
+use KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory;
+use Magento\Ui\DataProvider\AbstractDataProvider;
+
 /**
  * Class ScheduleProvider
  * @package KiwiCommerce\CronScheduler\Ui\DataProvider
  */
-class ScheduleProvider extends \Magento\Ui\DataProvider\AbstractDataProvider
+class ScheduleProvider extends AbstractDataProvider
 {
-    /**
-     * @var \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\Collection
-     */
     protected $collection;
 
     /**
      * Class constructor
-     * @param string $name
-     * @param string $primaryFieldName
-     * @param string $requestFieldName
-     * @param \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $collectionFactory
-     * @param array $meta
-     * @param array $data
      */
     public function __construct(
         $name,
         $primaryFieldName,
         $requestFieldName,
-        \KiwiCommerce\CronScheduler\Model\ResourceModel\Schedule\CollectionFactory $collectionFactory,
+        CollectionFactory $collectionFactory,
         array $meta = [],
         array $data = []
     ) {
