@@ -24,20 +24,25 @@ use Magento\Framework\UrlInterface;
  */
 class GenericButton
 {
+    protected UrlInterface $urlBuilder;
+
+    protected Registry $registry;
 
     /**
      * Constructor
      */
     public function __construct(
-        protected UrlInterface $urlBuilder,
-        protected Registry $registry
+        Context $context,
+        Registry $registry
     ) {
+        $this->urlBuilder = $context->getUrlBuilder();
+        $this->registry = $registry;
     }
 
     /**
      * Return the synonyms group Id.
      */
-    public function getId(): int
+    public function getId(): int|null
     {
         $contact = $this->registry->registry('contact');
         return $contact ?->getId();

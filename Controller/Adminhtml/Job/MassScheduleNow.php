@@ -32,15 +32,15 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
  */
 class MassScheduleNow extends Action
 {
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
     public TimezoneInterface $timezone;
 
     public DateTime $dateTime;
 
-    public Schedule $scheduleHelper;
+    public Schedule|null $scheduleHelper = null;
 
-    public Cronjob $jobHelper;
+    public Cronjob|null $jobHelper = null;
 
     protected string $aclResource = "job_massschedule";
 

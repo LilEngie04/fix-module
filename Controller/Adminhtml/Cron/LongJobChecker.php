@@ -26,7 +26,7 @@ use Magento\Framework\Stdlib\DateTime\DateTime;
  */
 class LongJobChecker extends Action
 {
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
     private string $timePeriod = '- 3 hour';
 
@@ -56,7 +56,7 @@ class LongJobChecker extends Action
     public function execute()
     {
         $collection = $this->scheduleCollectionFactory->create();
-        $time = DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp($this->timePeriod));
+        $time = DateTime::createFromFormat('Y-m-d H:M:S', $this->dateTime->gmtTimestamp($this->timePeriod));
 
         $jobs = $collection->addFieldToFilter('status', Schedule::STATUS_RUNNING)
             ->addFieldToFilter(
@@ -73,7 +73,7 @@ class LongJobChecker extends Action
         foreach ($jobs as $job) {
             $pid = $job->getPid();
 
-            $finished_at = DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
+            $finished_at = DateTime::createFromFormat('Y-m-d H:M:S', $this->dateTime->gmtTimestamp());
             if (function_exists('posix_getsid') && posix_getsid($pid) === false) {
                 $job->setData('status', Schedule::STATUS_ERROR);
                 $job->setData('messages', __('Execution stopped due to some error.'));

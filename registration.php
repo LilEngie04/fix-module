@@ -12,8 +12,10 @@
  * @license    https://kiwicommerce.co.uk/magento2-extension-license/
  */
 
-\Magento\Framework\Component\ComponentRegistrar::register(
-    \Magento\Framework\Component\ComponentRegistrar::MODULE,
+use Magento\Framework\Component\ComponentRegistrar;
+
+ComponentRegistrar::register(
+    ComponentRegistrar::MODULE,
     'KiwiCommerce_CronScheduler',
     __DIR__
 );

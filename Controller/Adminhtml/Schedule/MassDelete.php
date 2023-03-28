@@ -26,7 +26,7 @@ use Magento\Ui\Component\MassAction\Filter;
  */
 class MassDelete extends Action
 {
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
     protected Filter $filter;
 

@@ -14,7 +14,7 @@
 
 namespace KiwiCommerce\CronScheduler\Block\Adminhtml\System\Config\Fieldset;
 
-use Magento\Backend\Block\Template;
+use Magento\Backend\Block\Template\Context;
 use Magento\Framework\Data\Form\Element\AbstractElement;
 use Magento\Framework\Data\Form\Element\Renderer\RendererInterface;
 use Magento\Framework\Module\ModuleList;
@@ -31,7 +31,7 @@ class Hint extends Template implements RendererInterface
      * Class constructor.
      */
     public function __construct(
-        Template\Context $context,
+        Context $context,
         ModuleList $moduleList,
         array $data = []
     ) {

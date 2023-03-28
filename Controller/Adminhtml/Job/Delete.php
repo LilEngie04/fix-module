@@ -33,11 +33,11 @@ class Delete extends Action
 
     protected string $aclResource = "job_deletejob";
 
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
     public Job $jobModel;
 
-    public Cronjob $jobHelper;
+    public Cronjob|null $jobHelper =null;
 
     /**
      * Class constructor

@@ -26,7 +26,7 @@ use Magento\Framework\View\Result\Page;
  */
 class Listing extends Action
 {
-    public Schedule $scheduleHelper;
+    public Schedule|null $scheduleHelper = null;
 
     protected string $aclResource = "job_schedule_listing";
 

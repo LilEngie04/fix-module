@@ -29,11 +29,11 @@ use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
  */
 class Timeline extends Template
 {
-    public DateTime $datetime;
+    public DateTime|null $datetime = null;
 
-    public Schedule $scheduleHelper;
+    public Schedule|null $scheduleHelper = null;
 
-    public CollectionFactory $collectionFactory;
+    public CollectionFactory|null $collectionFactory = null;
 
     public TimezoneInterface $timezone;
     private ProductMetadata $productMetaData;

@@ -27,7 +27,7 @@ use Magento\Framework\Controller\ResultInterface;
  */
 class UniqueJobCode extends Action
 {
-    public Cronjob $jobHelper;
+    public Cronjob|null $jobHelper = null;
 
     /**
      * Class constructor.

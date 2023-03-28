@@ -36,7 +36,7 @@ class Job extends AbstractModel
 
     public string $scope = ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
 
-    public ConfigInterface $configInterface;
+    public ConfigInterface|null $configInterface = null;
 
     /**
      * class constructor

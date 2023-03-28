@@ -49,15 +49,15 @@ class Sendemail extends Action
      */
     const XML_PATH_EMAIL_ENABLE_STATUS = 'cronscheduler/general/cronscheduler_email_enabled';
 
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
-    public TransportBuilder $transportBuilder;
+    public TransportBuilder|null $transportBuilder = null;
 
-    public StateInterface $inlineTranslation;
+    public StateInterface|null $inlineTranslation = null;
 
-    public ScopeConfigInterface $scopeConfig;
+    public ScopeConfigInterface|null $scopeConfig = null;
 
-    public StoreManagerInterface $storeManager;
+    public StoreManagerInterface|null $storeManager = null;
 
     public SenderResolverInterface $senderResolver;
 
@@ -103,6 +103,31 @@ class Sendemail extends Action
     /**
      * Execute action
      */
+
+    /*public function execute():ResponseInterface|ResultInterface|string
+    {
+        $emailEnableStatus = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_ENABLE_STATUS, ScopeInterface::SCOPE_STORE);
+
+        if ($emailEnableStatus) {
+            $emailItems['errorMessages'] = $this->getFatalErrorOfJobcode();
+            $emailItems['missedJobs']    = $this->getMissedCronJob();
+
+            $receiverEmailConfig = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_RECIPIENT, ScopeInterface::SCOPE_STORE);
+            $receiverEmailIds = explode(',', $receiverEmailConfig);
+
+            if (!empty($receiverEmailIds) && (!empty($emailItems['errorMessages']->getData()) || !empty($emailItems['missedJobs']->getData()))) {
+                try {
+                    $from = $this->senderResolver->resolve('general');
+
+                    $this->sendEmailStatus($receiverEmailIds, $from, $emailItems);
+                    $this->updateMailStatus($emailItems);
+                } catch (\Exception $e) {
+                    $this->logger->critical($e);
+                }
+            }
+        }
+    }*/
+
     public function execute(): ResponseInterface|ResultInterface|string
     {
         $emailEnableStatus = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_ENABLE_STATUS, ScopeInterface::SCOPE_STORE);
@@ -135,8 +160,7 @@ class Sendemail extends Action
             $this->logger->critical($e);
         }
 
-        return '';
-            /*$emailItems['errorMessages'] = $this->getFatalErrorOfJobcode();
+            $emailItems['errorMessages'] = $this->getFatalErrorOfJobcode();
             $emailItems['missedJobs']    = $this->getMissedCronJob();
 
             $receiverEmailConfig = $this->scopeConfig->getValue(self::XML_PATH_EMAIL_RECIPIENT, ScopeInterface::SCOPE_STORE);
@@ -152,7 +176,8 @@ class Sendemail extends Action
                     $this->logger->critical($e);
                 }
             }
-        }*/
+        return '';
+
     }
 
     /**

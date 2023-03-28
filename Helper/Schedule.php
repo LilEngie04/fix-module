@@ -27,13 +27,13 @@ use Magento\Framework\Message\ManagerInterface;
  */
 class Schedule extends AbstractHelper
 {
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
-    public ManagerInterface $messageManager;
+    public ManagerInterface|null $messageManager = null;
 
-    public ProductMetadata $productMetaData;
+    public ProductMetadata|null $productMetaData = null;
 
-    public DateTime $datetime;
+    public DateTime|null $datetime = null;
 
 
     /**
@@ -103,7 +103,7 @@ class Schedule extends AbstractHelper
         $matches = [];
         preg_match('/(\d+-\d+-\d+)T(\d+:\d+)/', $time, $matches);
         $time = $matches[1] . " " . $matches[2];
-        return DateTime::createFromFormat('%Y-%m-%d %H:%M:00', date($time));
+        return DateTime::createFromFormat('Y-m-d H:M:00', date($time));
     }
 
     /**

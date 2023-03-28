@@ -31,7 +31,7 @@ class Save extends Action
 {
     public TypeListInterface $cacheTypeList;
 
-    public Cronjob $jobHelper;
+    public Cronjob|null $jobHelper = null;
 
     public Job $jobModel;
 

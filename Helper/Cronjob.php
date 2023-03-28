@@ -27,11 +27,11 @@ use Magento\Store\Model\ScopeInterface;
  */
 class Cronjob extends AbstractHelper
 {
-    public ConfigInterface $cronConfig;
+    public ConfigInterface|null $cronConfig = null;
 
-    public Db $dbReader;
+    public Db|null $dbReader = null;
 
-    public Xml $reader;
+    public Xml|null $reader = null;
 
     public string $cronAppendString = '_cron_{$counter}';
 
@@ -72,8 +72,6 @@ class Cronjob extends AbstractHelper
 
     /**
      * Get list of cron jobs.
-     *
-     * @return array
      */
     public function getJobData(): array
     {
@@ -257,8 +255,8 @@ class Cronjob extends AbstractHelper
         $xmlJobs = $this->reader->read();
         $dbJobs = $this->dbReader->get();
 
-        $xml = (isset($xmlJobs[$group][$jobCode])) ? true : false;
-        $db  = (isset($dbJobs[$group][$jobCode])) ? true : false;
+        $xml = isset($xmlJobs[$group][$jobCode]);
+        $db  = isset($dbJobs[$group][$jobCode]);
         if ($xml && $db) {
             $result = self::CRON_DB_XML;
         } elseif (!$xml && $db) {

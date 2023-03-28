@@ -26,7 +26,7 @@ class Status
     /**
      * Set cron status
      */
-    public function checkstatus(Schedule $schedule = null)
+    public function checkstatus(Schedule|null $schedule = null)
     {
         $schedule->setMessages(__("Cron is Working"));
         $schedule->save();

@@ -30,7 +30,7 @@ use Magento\Framework\Controller\ResultInterface;
  */
 class MassStatusDisable extends Action
 {
-    public Schedule $jobHelper;
+    public Schedule|null $jobHelper = null;
 
     public Job $jobModel;
 

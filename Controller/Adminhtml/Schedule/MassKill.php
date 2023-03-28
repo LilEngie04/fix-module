@@ -35,7 +35,7 @@ class MassKill extends Action
      */
     const STATUS_KILLED = 'killed';
 
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
     public DateTime $dateTime;
 
@@ -111,7 +111,7 @@ class MassKill extends Action
                 if (function_exists('posix_getsid') && posix_getsid($pid) === false) {
                     $errorScheduleIds[] = $scheduleId;
                 } else {
-                    $finished_at = DateTime::createFromFormat('%Y-%m-%d %H:%M:%S', $this->dateTime->gmtTimestamp());
+                    $finished_at = DateTime::createFromFormat('Y-m-d H:M:S', $this->dateTime->gmtTimestamp());
                     $dbrunningjobs->setData('status', self::STATUS_KILLED)
                     ->setData('messages', __('It is killed by admin.'))
                     ->setData('finished_at', $finished_at)

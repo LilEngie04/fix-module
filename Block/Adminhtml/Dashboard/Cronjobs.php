@@ -27,7 +27,7 @@ use Magento\Store\Model\ScopeInterface;
  */
 class Cronjobs extends Template
 {
-    public CollectionFactory $scheduleCollectionFactory;
+    public CollectionFactory|null $scheduleCollectionFactory = null;
 
     /**
      * Dashboard enable/disable status
@@ -66,8 +66,6 @@ class Cronjobs extends Template
 
     public function isDashboardActive(): bool
     {
-        $dashboardEnableStatus = $this->_scopeConfig->getValue(self::XML_PATH_DASHBOARD_ENABLE_STATUS, ScopeInterface::SCOPE_STORE);
-
-        return (bool) $dashboardEnableStatus;
+        return $this->_scopeConfig->getValue(self::XML_PATH_DASHBOARD_ENABLE_STATUS, ScopeInterface::SCOPE_STORE);
     }
 }
